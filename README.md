@@ -1,6 +1,6 @@
 # Piloto SAP BTP – Governança Git e Pipeline
 
-Repositório de **governança** para versionamento, branches, tags e promoção entre ambientes (DEV, HOM/QAS, PROD). Sem código de aplicação, CAP ou backend; foco em Git e fluxo de pipeline para SAP BTP / Cloud Foundry.
+Repositório de **governança** (branches, tags, SemVer, DEV/HOM/PROD) e **app piloto** em `cf-node-app/` (Node.js + deploy Cloud Foundry). Pipeline: GitHub Actions em `.github/workflows/cf-deploy.yml` (push em `develop` → DEV, `release/*` → HOM, tag `v*` → PROD). Secrets no GitHub: `CF_API_DEV`, `CF_ORG_DEV`, `CF_SPACE_DEV`, `CF_USERNAME_DEV`, `CF_PASSWORD_DEV` e equivalentes `_HOM` e `_PROD`.
 
 ---
 

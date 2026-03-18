@@ -1,0 +1,9 @@
+---
+applications:
+  - name: sap-btp-pipeline-app
+    memory: 128M
+    buildpacks:
+      - nodejs_buildpack
+    env:
+      NODE_ENV: production
+      ENV: hom

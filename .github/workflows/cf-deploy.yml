@@ -1,0 +1,83 @@
+name: Deploy to SAP BTP Cloud Foundry
+
+on:
+  push:
+    branches:
+      - develop
+      - 'release/**'
+    tags:
+      - 'v*'
+
+jobs:
+  deploy-dev:
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Cloud Foundry CLI
+        run: |
+          curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=v8" -o cf.tgz
+          tar -xzf cf.tgz
+          sudo mv cf /usr/local/bin/cf
+          cf version
+      - name: Login and deploy DEV
+        env:
+          CF_API: ${{ secrets.CF_API_DEV }}
+          CF_ORG: ${{ secrets.CF_ORG_DEV }}
+          CF_SPACE: ${{ secrets.CF_SPACE_DEV }}
+          CF_USERNAME: ${{ secrets.CF_USERNAME_DEV }}
+          CF_PASSWORD: ${{ secrets.CF_PASSWORD_DEV }}
+        run: |
+          cf api "$CF_API" --skip-ssl-validation
+          cf auth "$CF_USERNAME" "$CF_PASSWORD"
+          cf target -o "$CF_ORG" -s "$CF_SPACE"
+          cd cf-node-app
+          cf push -f manifest-dev.yml
+
+  deploy-hom:
+    if: startsWith(github.ref, 'refs/heads/release/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Cloud Foundry CLI
+        run: |
+          curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=v8" -o cf.tgz
+          tar -xzf cf.tgz
+          sudo mv cf /usr/local/bin/cf
+      - name: Login and deploy HOM
+        env:
+          CF_API: ${{ secrets.CF_API_HOM }}
+          CF_ORG: ${{ secrets.CF_ORG_HOM }}
+          CF_SPACE: ${{ secrets.CF_SPACE_HOM }}
+          CF_USERNAME: ${{ secrets.CF_USERNAME_HOM }}
+          CF_PASSWORD: ${{ secrets.CF_PASSWORD_HOM }}
+        run: |
+          cf api "$CF_API" --skip-ssl-validation
+          cf auth "$CF_USERNAME" "$CF_PASSWORD"
+          cf target -o "$CF_ORG" -s "$CF_SPACE"
+          cd cf-node-app
+          cf push -f manifest-hom.yml
+
+  deploy-prod:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Cloud Foundry CLI
+        run: |
+          curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=v8" -o cf.tgz
+          tar -xzf cf.tgz
+          sudo mv cf /usr/local/bin/cf
+      - name: Login and deploy PROD
+        env:
+          CF_API: ${{ secrets.CF_API_PROD }}
+          CF_ORG: ${{ secrets.CF_ORG_PROD }}
+          CF_SPACE: ${{ secrets.CF_SPACE_PROD }}
+          CF_USERNAME: ${{ secrets.CF_USERNAME_PROD }}
+          CF_PASSWORD: ${{ secrets.CF_PASSWORD_PROD }}
+        run: |
+          cf api "$CF_API" --skip-ssl-validation
+          cf auth "$CF_USERNAME" "$CF_PASSWORD"
+          cf target -o "$CF_ORG" -s "$CF_SPACE"
+          cd cf-node-app
+          cf push -f manifest-prod.yml
